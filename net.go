@@ -6,14 +6,8 @@ import (
 	"strings"
 )
 
-// IP地址和MAC地址
-type Interface struct {
-	IPAddr       string
-	HardwareAddr string
-}
-
-// 通过接口名称获取(IP地址和MAC地址)
-func GetInterfaceByName(_interface string) (*Interface, error) {
+// 通过接口名称获取硬件地址
+func GetHardwareAddrByName(_interface string) (interface{}, error) {
 	inter, err := net.InterfaceByName(_interface)
 	if err != nil {
 		return nil, err
@@ -22,6 +16,15 @@ func GetInterfaceByName(_interface string) (*Interface, error) {
 	for _, v := range strings.Split(inter.HardwareAddr.String(), ":") {
 		HardwareAddr += v
 	}
+	return strings.ToUpper(HardwareAddr), nil
+}
+
+// 通过接口名称获取网络地址
+func GetNetworkAddrByName(_interface string) (interface{}, error) {
+	inter, err := net.InterfaceByName(_interface)
+	if err != nil {
+		return nil, err
+	}
 	addrs, err := inter.Addrs()
 	if err != nil {
 		return nil, err
@@ -29,7 +32,7 @@ func GetInterfaceByName(_interface string) (*Interface, error) {
 	for _, v := range addrs {
 		addr := strings.Split(v.String(), "/")
 		if len(strings.Split(addr[0], ".")) == 4 {
-			return &Interface{addr[0], strings.ToUpper(HardwareAddr)}, nil
+			return addr[0], nil
 		}
 	}
 	return nil, fmt.Errorf("...")
