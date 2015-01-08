@@ -18,21 +18,21 @@ func GetInterfaceByName(_interface string) (*Interface, error) {
 	if err != nil {
 		return nil, err
 	}
-	addr, err := net.InterfaceAddrs()
-	if err != nil {
-		return nil, err
-	}
 	var HardwareAddr string
 	for _, v := range strings.Split(inter.HardwareAddr.String(), ":") {
 		HardwareAddr += v
 	}
-	var IPAddr string
-	for k, v := range addr {
-		if k == inter.Index {
-			IPAddr = v.String()
+	addrs, err := inter.Addrs()
+	if err != nil {
+		return nil, err
+	}
+	for _, v := range addrs {
+		addr := strings.Split(v.String(), "/")
+		if len(strings.Split(addr[0], ".")) == 4 {
+			return &Interface{addr[0], strings.ToUpper(HardwareAddr)}, nil
 		}
 	}
-	return &Interface{strings.Split(IPAddr, "/")[0], strings.ToUpper(HardwareAddr)}, nil
+	return nil, fmt.Errorf("...")
 }
 
 func main() {
