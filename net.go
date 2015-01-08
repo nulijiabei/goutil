@@ -16,6 +16,9 @@ func GetHardwareAddrByName(_interface string) (interface{}, error) {
 	for _, v := range strings.Split(inter.HardwareAddr.String(), ":") {
 		HardwareAddr += v
 	}
+	if IsBlank(Trim(HardwareAddr)) {
+		return nil, fmt.Errorf("...")
+	}
 	return strings.ToUpper(HardwareAddr), nil
 }
 
