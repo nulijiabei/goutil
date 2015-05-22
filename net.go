@@ -6,6 +6,27 @@ import (
 	"strings"
 )
 
+// 获取指定网络接口地址
+func GetInterfaceByName() map[string]interface{} {
+	inter := make(map[string]interface{})
+	devs := [...]string{"eth0", "eth1", "ppp0", "tun0"}
+	for _, dev := range devs {
+		data := make(map[string]string)
+		network, err := GetNetworkAddrByName(dev)
+		if err == nil {
+			data["network"] = network.(string)
+		}
+		hardware, err := GetHardwareAddrByName(dev)
+		if err == nil {
+			data["hardware"] = hardware.(string)
+		}
+		if len(data) > 0 {
+			inter[dev] = data
+		}
+	}
+	return inter
+}
+
 // 通过接口名称获取硬件地址
 func GetHardwareAddrByName(_interface string) (interface{}, error) {
 	inter, err := net.InterfaceByName(_interface)
