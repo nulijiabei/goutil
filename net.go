@@ -40,7 +40,3 @@ func GetNetworkAddrByName(_interface string) (interface{}, error) {
 	}
 	return nil, fmt.Errorf("...")
 }
-
-func main() {
-	fmt.Println(GetInterfaceByName("en0"))
-}
