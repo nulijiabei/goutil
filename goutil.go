@@ -1,9 +1,17 @@
 package goutil
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"mime/multipart"
 	"net"
+	"net/http"
+	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -97,6 +105,116 @@ func Exists(name string) bool {
 		}
 	}
 	return true
+}
+
+// --------------------------------- //
+// http
+
+// Http Get Request
+func HttpGetReq(u string, params map[string]string) ([]byte, error) {
+	p, _ := url.Parse(u)
+	q := p.Query()
+	for k, v := range params {
+		q.Set(k, v)
+	}
+	p.RawQuery = q.Encode()
+	resp, err := http.Get(p.String())
+	if err != nil {
+		return nil, err
+	}
+	//	if resp.StatusCode != 200 {
+	//		log.Println(u, resp.StatusCode)
+	//	}
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+// Http Post Request
+func HttpPostReq(u string, params map[string]string) ([]byte, error) {
+	values := make(url.Values)
+	for k, v := range params {
+		values.Add(k, v)
+	}
+	resp, err := http.PostForm(u, values)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+// Http Post Request Plus
+func HttpPostReqPlus(u string, params map[string]interface{}, header map[string]string) ([]byte, error) {
+	client := &http.Client{}
+	js, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest("POST", u, strings.NewReader(string(js)))
+	if err != nil {
+		return nil, err
+	}
+	for k, v := range header {
+		req.Header.Add(k, v)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+// multipart/form-data 文件上传 ...
+// <input type="file" name="file" />
+func HttpMultipartPostReq(u string, ff string, params map[string]string) ([]byte, error) {
+	f, err := os.Open(ff)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	body := new(bytes.Buffer)
+	w := multipart.NewWriter(body)
+	file, err := w.CreateFormFile("file", filepath.Base(ff))
+	if err != nil {
+		return nil, err
+	}
+	_, err = io.Copy(file, f)
+	content_type := w.FormDataContentType()
+	for k, v := range params {
+		w.WriteField(k, v)
+	}
+	err = w.Close()
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest("POST", u, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", content_type)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 // --------------------------------- //
