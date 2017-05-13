@@ -87,20 +87,34 @@ func IsBlank(s string) bool {
 
 const FORMAT_DATE string = "2006-01-02"
 const FORMAT_TIME string = "15:04:05"
-
-// 获得当前日志
-func GetDate() string {
-	return time.Now().Format(FORMAT_DATE)
-}
-
-// 获得当前系统时间
-func GetTime() string {
-	return time.Now().Format(FORMAT_TIME)
-}
+const FORMAT_DATE_TIME string = "2006-01-02 15:04:05"
 
 // 获取本地时间戳纳秒,以字符串格式返回
 func UnixNano() string {
 	return strconv.FormatInt(time.Now().UnixNano(), 10)
+}
+
+// 获取本地事件毫秒
+func UnixMsSec(off int) int64 {
+	return (time.Now().Unix() + int64(off)) * 1000
+}
+
+// 获得当前系统日期
+//const FORMAT_DATE string = "2006-01-02"
+//const FORMAT_TIME string = "15:04:05"
+//const FORMAT_DATE_TIME string = "2006-01-02 15:04:05"
+func GetTime(layout string) string {
+	return time.Now().Format(layout)
+}
+
+// 解析日期
+//const FORMAT_DATE string = "2006-01-02"
+//const FORMAT_TIME string = "15:04:05"
+//const FORMAT_DATE_TIME string = "2006-01-02 15:04:05"
+func ParseTime(layout, value string) time.Time {
+	t, err := time.Parse(layout, value)
+	panic(err)
+	return t
 }
 
 // --------------------------------- //
