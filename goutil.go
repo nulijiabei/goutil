@@ -39,6 +39,15 @@ func String2Int(s string, dft int) int {
 	return re
 }
 
+// string to int64
+func String2Int64(s string, dft int64) int64 {
+	var re, err = strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return dft
+	}
+	return re
+}
+
 // string to utf8
 func String2Utf8(_str string) string {
 	var utf string
