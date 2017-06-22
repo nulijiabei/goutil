@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"image"
+	"image/draw"
+	"image/jpeg"
+	"image/png"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -11,6 +15,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -121,13 +126,27 @@ func ParseTime(layout, value string) time.Time {
 // os
 
 // 判断一个路径是否存在
-func Exists(name string) bool {
+func IsExist(name string) bool {
 	if _, err := os.Stat(name); err != nil {
 		if os.IsNotExist(err) {
 			return false
 		}
 	}
 	return true
+}
+
+// 确保父目录的存在 ...
+func CheckParents(aph string) {
+	pph := path.Dir(aph)
+	err := os.MkdirAll(pph, os.ModeDir|0755)
+	if nil != err {
+		panic(err)
+	}
+}
+
+// 是否存在某一路径
+func Fexists(ph string) bool {
+	return IsExist(ph)
 }
 
 // --------------------------------- //
@@ -297,4 +316,196 @@ func GetNetworkAddrByName(_interface string) (interface{}, error) {
 		}
 	}
 	return nil, fmt.Errorf("...")
+}
+
+// -------------------------------------------------
+// image
+
+// 读取JPEG图片返回image.Image对象
+func ImageJPEG(ph string) (image.Image, error) {
+	// 打开图片文件
+	f, fileErr := os.Open(ph)
+	if fileErr != nil {
+		return nil, fileErr
+	}
+	// 退出时关闭文件
+	defer f.Close()
+	// 解码
+	j, jErr := jpeg.Decode(f)
+	if jErr != nil {
+		return nil, jErr
+	}
+	// 返回解码后的图片
+	return j, nil
+}
+
+// 读取PNG图片返回image.Image对象
+func ImagePNG(ph string) (image.Image, error) {
+	// 打开图片文件
+	f, fileErr := os.Open(ph)
+	if fileErr != nil {
+		return nil, fileErr
+	}
+	// 退出时关闭文件
+	defer f.Close()
+	// 解码
+	p, pErr := png.Decode(f)
+	if pErr != nil {
+		return nil, pErr
+	}
+	// 返回解码后的图片
+	return p, nil
+}
+
+// 按照分辨率创建一张空白图片对象
+func ImageRGBA(width, height int) *image.RGBA {
+	// 建立图像,image.Rect(最小X,最小Y,最大X,最小Y)
+	return image.NewRGBA(image.Rect(0, 0, width, height))
+}
+
+// 将图片绘制到图片
+func ImageDrawRGBA(img *image.RGBA, imgcode image.Image, x, y int) {
+	// 绘制图像
+	// image.Point A点的X,Y坐标,轴向右和向下增加{0,0}
+	// image.ZP ZP is the zero Point
+	// image.Pt Pt is shorthand for Point{X, Y}
+	draw.Draw(img, img.Bounds(), imgcode, image.Pt(x, y), draw.Over)
+}
+
+// 将图片绘制到图片
+func ImageDrawRGBAOffSet(img *image.RGBA, imgcode image.Image, r image.Rectangle, x, y int) {
+	// 绘制图像
+	// image.Point A点的X,Y坐标,轴向右和向下增加{0,0}
+	// image.ZP ZP is the zero Point
+	// image.Pt Pt is shorthand for Point{X, Y}
+	// r image.Rectangle img.Bounds() or img.Bounds().Add(offset)
+	draw.Draw(img, r, imgcode, image.Pt(x, y), draw.Over)
+}
+
+// JPEG将编码生成图片
+// 选择编码参数,质量范围从1到100,更高的是更好 &jpeg.Options{90}
+func ImageEncodeJPEG(ph string, img image.Image, option int) error {
+	// 确保文件父目录存在
+	CheckParents(ph)
+	// 打开文件等待写入
+	f := FileW(ph)
+	// 保证文件正常关闭
+	defer f.Close()
+	// 写入文件
+	return jpeg.Encode(f, img, &jpeg.Options{option})
+}
+
+// PNG将编码生成图片
+func ImageEncodePNG(ph string, img image.Image) error {
+	// 确保文件父目录存在
+	CheckParents(ph)
+	// 打开文件等待写入
+	f := FileW(ph)
+	// 保证文件正常关闭
+	defer f.Close()
+	// 写入文件
+	return png.Encode(f, img)
+}
+
+// --------------------------------------------
+// file
+
+// 调用者将负责关闭文件
+func FileA(ph string) *os.File {
+	// 确定文件的父目录是存在的
+	CheckParents(ph)
+	// 打开文件，文件不存在则创建,追加方式
+	f, err := os.OpenFile(ph, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if nil != err {
+		panic(err)
+	}
+	return f
+}
+
+// 用回调的方式打文件以便追加内容，回调函数不需要关心文件关闭等问题
+func FileAF(ph string, callback func(*os.File)) {
+	f := FileA(ph)
+	if nil != f {
+		defer f.Close()
+		callback(f)
+	}
+}
+
+// 调用者将负责关闭文件
+func FileW(ph string) *os.File {
+	// 确定文件的父目录是存在的
+	CheckParents(ph)
+	// 打开文件
+	f, err := os.OpenFile(ph, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	if nil != err {
+		panic(err)
+	}
+	return f
+}
+
+// 用回调的方式打文件以便复写内容，回调函数不需要关心文件关闭等问题
+func FileWF(ph string, callback func(*os.File)) {
+	f := FileW(ph)
+	// 开始写入
+	if nil != f {
+		defer f.Close()
+		if nil != callback {
+			callback(f)
+		}
+	}
+}
+
+/*
+	将从自己磁盘目录，只读的方式打开一个文件。
+	如果文件不存在，或者打开错误，则返回 nil。
+	调用者将负责关闭文件
+*/
+func FileR(ph string) *os.File {
+	f, err := os.Open(ph)
+	if nil != err {
+		return nil
+	}
+	return f
+}
+
+// 用回调的方式打文件以便读取内容，回调函数不需要关心文件关闭等问题
+func FileRF(ph string, callback func(*os.File)) {
+	f := FileR(ph)
+	if nil != f {
+		defer f.Close()
+		callback(f)
+	}
+}
+
+// 自定义模式打开文件
+// 调用者将负责关闭文件
+func FileO(ph string, flag int) *os.File {
+	// 确定文件的父目录是存在的
+	CheckParents(ph)
+	// 打开文件
+	f, err := os.OpenFile(ph, flag, 0666)
+	if nil != err {
+		return nil
+	}
+	return f
+}
+
+// 用自定义的模式打文件以便替换内容，回调函数不需要关心文件关闭等问题
+func FileOF(ph string, flag int, callback func(*os.File)) {
+	f := FileO(ph, flag)
+	// 开始写入
+	if nil != f {
+		defer f.Close()
+		if nil != callback {
+			callback(f)
+		}
+	}
+}
+
+// 强制覆盖写入文件
+func FWrite(path string, data []byte) error {
+	// 保证目录存在
+	CheckParents(path)
+	// 写入文件
+	return ioutil.WriteFile(path, data, 0644)
 }
