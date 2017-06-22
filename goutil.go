@@ -460,6 +460,7 @@ func FileWF(ph string, callback func(*os.File)) {
 	如果文件不存在，或者打开错误，则返回 nil。
 	调用者将负责关闭文件
 */
+// ioutil.ReadFile
 func FileR(ph string) *os.File {
 	f, err := os.Open(ph)
 	if nil != err {
