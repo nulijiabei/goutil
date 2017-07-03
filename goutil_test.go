@@ -62,3 +62,24 @@ func TestIsBlank(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestUnixNano(t *testing.T) {
+	t.Log(UnixNano())
+}
+
+func TestUnixMsSec(t *testing.T) {
+	t.Log(UnixMsSec(0))
+}
+
+func TestGetTime(t *testing.T) {
+	t.Log(GetTime(FORMAT_DATE))
+	t.Log(GetTime(FORMAT_TIME))
+	t.Log(GetTime(FORMAT_DATE_TIME))
+}
+
+func TestParseTime(t *testing.T) {
+	a := ParseTime(FORMAT_DATE, "2006-01-02")
+	b := ParseTime(FORMAT_DATE_TIME, "2006-01-02 15:04:05")
+	t.Log(a.Unix())
+	t.Log(b.Unix())
+}

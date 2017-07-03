@@ -10,6 +10,7 @@ import (
 	"image/png"
 	"io"
 	"io/ioutil"
+	"log"
 	"mime/multipart"
 	"net"
 	"net/http"
@@ -22,6 +23,15 @@ import (
 	"time"
 	"unicode/utf8"
 )
+
+// --------------------------------- //
+
+// error
+func NoError(err error) {
+	if err != nil {
+		log.Panic(err)
+	}
+}
 
 // --------------------------------- //
 // a2b
@@ -118,7 +128,9 @@ func GetTime(layout string) string {
 //const FORMAT_DATE_TIME string = "2006-01-02 15:04:05"
 func ParseTime(layout, value string) time.Time {
 	t, err := time.Parse(layout, value)
-	panic(err)
+	if err != nil {
+		panic(err)
+	}
 	return t
 }
 
