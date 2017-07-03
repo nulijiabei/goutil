@@ -75,6 +75,22 @@ func String2Utf8(_str string) string {
 	return utf
 }
 
+// string to bool
+func String2Bool(_str string) bool {
+	str := strings.TrimSpace(strings.ToLower(_str))
+	if str == "true" {
+		return true
+	} else if str == "false" {
+		return false
+	} else if str == "1" {
+		return true
+	} else if str == "0" {
+		return false
+	} else {
+		return false
+	}
+}
+
 // --------------------------------- //
 // string
 
