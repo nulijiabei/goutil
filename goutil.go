@@ -479,6 +479,15 @@ func FWrite(path string, data []byte) error {
 	return ioutil.WriteFile(path, data, 0644)
 }
 
+// 复制文件
+func FCopy(src string, dst string) error {
+	data, err := ioutil.ReadFile(src)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(dst, data, 0644)
+}
+
 // ---------------------------------------------
 // map
 
@@ -538,12 +547,12 @@ func (m *BeeMap) Delete(k interface{}) {
 // ---------------------------------------------
 // json
 
-func JsonMarshalIndent(v interface{}) []byte {
+func JsonMarshalIndent(v interface{}) ([]byte, error) {
 	data, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return data
+	return data, nil
 }
 
 // enc := json.NewEncoder(file)
