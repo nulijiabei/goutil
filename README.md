@@ -10,6 +10,7 @@ Goutil
 	const FORMAT_TIME string = "15:04:05"
 
 	func CheckParents(aph string)
+	func FCopy(src string, dst string) error
 	func FWrite(path string, data []byte) error
 	func Fexists(ph string) bool
 	func FileA(ph string) *os.File
@@ -35,6 +36,10 @@ Goutil
 	func IsBlank(s string) bool
 	func IsExist(name string) bool
 	func IsSpace(c byte) bool
+	func JsonMarshalFile(file string, v interface{}) error
+	func JsonMarshalIndent(v interface{}) ([]byte, error)
+	func JsonMarshalIndentFile(file string, v interface{}) error
+	func JsonUnmarshalFile(file string, v interface{}) error
 	func NoError(err error)
 	func ParseTime(layout, value string) time.Time
 	func String2Bool(_str string) bool
