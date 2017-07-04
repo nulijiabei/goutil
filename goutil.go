@@ -3,7 +3,6 @@ package goutil
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"image"
 	"image/draw"
 	"image/jpeg"
@@ -12,7 +11,6 @@ import (
 	"io/ioutil"
 	"log"
 	"mime/multipart"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -535,6 +533,45 @@ func (m *BeeMap) Delete(k interface{}) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	delete(m.bm, k)
+}
+
+// ---------------------------------------------
+// json
+
+func JsonMarshalIndent(v interface{}) []byte {
+	data, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		return nil
+	}
+	return data
+}
+
+// enc := json.NewEncoder(file)
+// enc.Encode(v)
+func JsonMarshalFile(file string, v interface{}) error {
+	data, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(file, data, 0644)
+}
+
+func JsonMarshalIndentFile(file string, v interface{}) error {
+	data, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(file, data, 0644)
+}
+
+// dec := json.NewDecoder(file)
+// dec.Decode(v)
+func JsonUnmarshalFile(file string, v interface{}) error {
+	data, err := ioutil.ReadFile(file)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(data, v)
 }
 
 // ---------------------------------------------
