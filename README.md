@@ -21,6 +21,7 @@ Goutil
 	func FileRF(ph string, callback func(*os.File))
 	func FileW(ph string) *os.File
 	func FileWF(ph string, callback func(*os.File))
+	func GetEnv(v string) string
 	func GetTime(layout string) string
 	func HttpGetReq(u string, params map[string]string) ([]byte, error)
 	func HttpMultipartPostReq(u string, ff string, params map[string]string) ([]byte, error)
