@@ -3,6 +3,7 @@ package goutil
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"image"
 	"image/draw"
 	"image/jpeg"
@@ -174,6 +175,15 @@ func CheckParents(aph string) {
 // 是否存在某一路径
 func Fexists(ph string) bool {
 	return IsExist(ph)
+}
+
+// 获取环境变量 ...
+func GetEnv(v string) string {
+	home := os.Getenv(v)
+	if IsBlank(home) {
+		log.Panic(fmt.Sprintf("$%s", v))
+	}
+	return home
 }
 
 // --------------------------------- //
