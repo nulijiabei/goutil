@@ -201,10 +201,10 @@ func HttpGetReq(u string, params map[string]string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 	//	if resp.StatusCode != 200 {
 	//		log.Println(u, resp.StatusCode)
 	//	}
-	defer resp.Body.Close()
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -223,6 +223,9 @@ func HttpPostReq(u string, params map[string]string) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+	//	if resp.StatusCode != 200 {
+	//		log.Println(u, resp.StatusCode)
+	//	}
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -249,6 +252,9 @@ func HttpPostReqPlus(u string, params map[string]interface{}, header map[string]
 		return nil, err
 	}
 	defer resp.Body.Close()
+	//	if resp.StatusCode != 200 {
+	//		log.Println(u, resp.StatusCode)
+	//	}
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -258,7 +264,7 @@ func HttpPostReqPlus(u string, params map[string]interface{}, header map[string]
 
 // multipart/form-data 文件上传
 // <input type="file" name="file" />
-func HttpMultipartPostReq(u string, ff string, params map[string]string) ([]byte, error) {
+func HttpMultipartPostReq(u, ff string, params map[string]string) ([]byte, error) {
 	f, err := os.Open(ff)
 	if err != nil {
 		return nil, err
@@ -289,6 +295,45 @@ func HttpMultipartPostReq(u string, ff string, params map[string]string) ([]byte
 		return nil, err
 	}
 	defer resp.Body.Close()
+	//	if resp.StatusCode != 200 {
+	//		log.Println(u, resp.StatusCode)
+	//	}
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+// 通过Body发送文件内容
+func HttpUploadReq(u, ff string, params map[string]string) ([]byte, error) {
+	buf := new(bytes.Buffer)
+	f, err := os.Open(ff)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	_, err = io.Copy(buf, f)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest("POST", u, buf)
+	if err != nil {
+		return nil, err
+	}
+	query := req.URL.Query()
+	for k, v := range params {
+		query.Add(k, v)
+	}
+	req.URL.RawQuery = query.Encode()
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	//	if resp.StatusCode != 200 {
+	//		log.Println(u, resp.StatusCode)
+	//	}
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
