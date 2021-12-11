@@ -15,7 +15,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -173,7 +172,7 @@ func CheckDirectory(ph string) {
 
 // 确保父目录的存在 ...
 func CheckParents(ph string) {
-	pph := path.Dir(ph)
+	pph := filepath.Dir(ph)
 	err := os.MkdirAll(pph, os.ModeDir|0755)
 	if nil != err {
 		panic(err)
