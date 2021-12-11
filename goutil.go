@@ -163,9 +163,17 @@ func IsExist(name string) bool {
 	return true
 }
 
+// 确保目录的存在 ...
+func CheckDirectory(ph string) {
+	err := os.MkdirAll(ph, os.ModeDir|0755)
+	if nil != err {
+		panic(err)
+	}
+}
+
 // 确保父目录的存在 ...
-func CheckParents(aph string) {
-	pph := path.Dir(aph)
+func CheckParents(ph string) {
+	pph := path.Dir(ph)
 	err := os.MkdirAll(pph, os.ModeDir|0755)
 	if nil != err {
 		panic(err)
