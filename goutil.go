@@ -33,6 +33,18 @@ func NoError(err error) {
 }
 
 // --------------------------------- //
+// operator
+
+// ternary operator
+func TernaryOperator(condition bool, trueVal interface{}, falseVal interface{}) interface{} {
+	if condition {
+		return trueVal
+	} else {
+		return falseVal
+	}
+}
+
+// --------------------------------- //
 // a2b
 
 // string to float
